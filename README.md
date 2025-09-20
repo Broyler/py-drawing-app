@@ -1,8 +1,8 @@
 ﻿# Python drawing application in PyQt5
 
-Version: 0.1.0
+Version: 0.1.1
 
-![Screenshot of the application](https://i.ibb.co/XkL8nv1g/image.png)
+![Screenshot of the application](https://i.ibb.co/gLhhVVj8/image.png)
 
 ## Installation
 

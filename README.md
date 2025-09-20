@@ -23,7 +23,7 @@ Simply execute `python3 src/main.py` from the root of the project - you should b
 
 ## Features
 
-This project is still very much in the early development. As per version 0.1.0, the following features exist:
+This project is still very much in the early development. As per the current version, the following features exist:
 
 #### Tools:
  - Bucket fill tool (flood fill)

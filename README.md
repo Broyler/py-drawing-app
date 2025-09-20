@@ -1,8 +1,8 @@
 ﻿# Python drawing application in PyQt5
 
-Version: 0.1.1
+Version: 0.1.2
 
-![Screenshot of the application](https://i.ibb.co/gLhhVVj8/image.png)
+![Screenshot of the application](https://i.ibb.co/Nd34dwDm/image.png)
 
 ## Installation
 
@@ -36,10 +36,10 @@ This project is still very much in the early development. As per version 0.1.0, 
  - File operations such as opening, creating, and saving images.
  - Color selection from a predetermined color palette.
  - Thickness selection.
+ - Dynamic window resizing
 
 ### Work in progress
 
- - Window resizing (0.1.3).
  - Line, rectangle and circle tools (<0.2.0).
  - Custom color selection menu (<0.2.0).
  - Scaling settings (<0.2.5).

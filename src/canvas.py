@@ -1,107 +1,84 @@
-from typing import Optional
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QGraphicsPixmapItem, QGraphicsScene
 import numpy as np
 from settings import canvas_channels, scale_factor, canvas_pad
 
+import numpy as np
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QGraphicsView
+
 
 class Canvas(QImage):
-    def __init__(self, fmt, m_window):
-        view_w = m_window.graphics_view.width() - canvas_pad
-        view_h = m_window.graphics_view.height() - canvas_pad
-
-        base_size = min(view_w, view_h)
-        snapped_size = base_size - (base_size % scale_factor)
-        canvas_size = snapped_size // scale_factor
-
-        super().__init__(canvas_size, canvas_size, fmt)
-
-        self._width = canvas_size
-        self._height = canvas_size
-        self._channels = canvas_channels
-        self.arr: Optional[np.ndarray] = None
+    def __init__(self, m_window):
         self._graphics_view = m_window.graphics_view
+        self._channels = canvas_channels
         self._scale_factor = scale_factor
-        self._scene = None
-        self._pixmap_item = None
 
-    def to_arr(self) -> Optional[np.ndarray]:
-        ptr = self.bits()
-        if not ptr:
-            return
+        self._scene = QGraphicsScene()
+        self._pixmap_item = QGraphicsPixmapItem()
+        self._scene.addItem(self._pixmap_item)
+        self._graphics_view.setScene(self._scene)
 
-        ptr.setsize(self.byteCount())
-        buf = memoryview(ptr)
+        width, height = self._calculate_canvas_size()
+        super().__init__(width, height, QImage.Format_ARGB32)
+        self._width = width
+        self._height = height
 
-        bytes_per_pixel = self._channels
-        bytes_per_line = self.bytesPerLine()
-        padded_width_px = bytes_per_line // bytes_per_pixel
+        self._arr = self._create_array()
+        self._pixmap_item.setPixmap(QPixmap.fromImage(self))
+        self._pixmap_item.setScale(self._scale_factor)
 
-        raw = np.ndarray(
-            shape=(self._height, padded_width_px, bytes_per_pixel),
-            dtype=np.uint8,
-            buffer=buf,
-        )
-        self.arr = raw[:, : self._width, :]
-        return self.arr
+        self._graphics_view.resizeEvent = self._on_view_resize
 
-    def _on_view_resize(self, event):
-        view_w = self._graphics_view.width() - canvas_pad
-        view_h = self._graphics_view.height() - canvas_pad
+    def _calculate_canvas_size(self):
+        view_w = max(1, self._graphics_view.width() - canvas_pad)
+        view_h = max(1, self._graphics_view.height() - canvas_pad)
+        return view_w // self._scale_factor, view_h // self._scale_factor
 
-        base_size = min(view_w, view_h)
-        snapped_size = base_size - (base_size % self._scale_factor)
-        new_canvas_size = snapped_size // self._scale_factor
-
-        if new_canvas_size != self._width:
-            self.resize_canvas(new_canvas_size)
-
-    def resize_canvas(self, new_size):
-        old_arr = self.arr.copy() if self.arr is not None else None
-        self._width = new_size
-        self._height = new_size
-        self.arr = np.zeros((new_size, new_size, self._channels), dtype=np.uint8)
-        if old_arr is not None:
-            h = min(old_arr.shape[0], new_size)
-            w = min(old_arr.shape[1], new_size)
-            self.arr[:h, :w, :] = old_arr[:h, :w, :]
-
-        self._update_image()
-        self.refresh()
-
-
-    def _update_image(self):
-        super().__init__(self._width, self._height, self.format())
+    def _create_array(self):
         ptr = self.bits()
         if ptr is None:
             return
         ptr.setsize(self.byteCount())
-        buf = memoryview(ptr)
-        self.arr = np.ndarray(
-            shape=(self._height, self._width, self._channels),
+        arr = np.ndarray(
+            shape=(self.height(), self.width(), self._channels),
             dtype=np.uint8,
-            buffer=buf
+            buffer=ptr
         )
+        arr[:, :, :] = 255
+        return arr
 
-    def init(self):
-        self._graphics_view.resizeEvent = self._on_view_resize
+    @property
+    def arr(self):
+        return self._arr
 
-        self.to_arr()
-        if self.arr is None:
+    def to_arr(self):
+        return self._arr
+
+    def _on_view_resize(self, event):
+        new_w, new_h = self._calculate_canvas_size()
+        if new_w == self._width and new_h == self._height:
             return
 
-        if self._scene is None:
-            self._scene = QGraphicsScene()
+        if self._arr is None:
+            return
 
-        if self._pixmap_item is None:
-            self._pixmap_item = QGraphicsPixmapItem(QPixmap.fromImage(self))
-            self._scene.addItem(self._pixmap_item)
+        old_arr = self._arr.copy()
+        old_w, old_h = self._width, self._height
 
-        self._pixmap_item.setScale(self._scale_factor)
-        self._graphics_view.setScene(self._scene)
+        self._width, self._height = new_w, new_h
+        super().__init__(new_w, new_h, QImage.Format_ARGB32)
+        self._arr = self._create_array()
+
+        if self._arr is None:
+            return
+
+        h = min(old_h, new_h)
+        w = min(old_w, new_w)
+        self._arr[:h, :w, :] = old_arr[:h, :w, :]
+
+        self.refresh()
 
     def refresh(self):
-        if self._pixmap_item is None:
-            return
         self._pixmap_item.setPixmap(QPixmap.fromImage(self))
 

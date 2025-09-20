@@ -15,14 +15,12 @@ class PaintWindow(QMainWindow):
         super().__init__()
         uic.loadUi("main.ui", self)
         self.setWindowTitle("Python drawing")
-        # self.setFixedSize(800, 600)
 
         color_mgr = ColorManager(self)
         color_mgr.init()
 
-        canvas_mgr = Canvas(QImage.Format_ARGB32, self)
+        canvas_mgr = Canvas(self)
         canvas_mgr.fill(0xffffffff)
-        canvas_mgr.init()
 
         tools_mgr = ToolsManager(self)
         tools_mgr.init()

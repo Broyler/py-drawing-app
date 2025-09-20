@@ -2,6 +2,7 @@ import os
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import cv2
+from numpy import load
 
 import settings
 from confirm_dialog import ChangesDialog
@@ -19,6 +20,7 @@ class FilesManager:
         self._m_window.actionSave.triggered.connect(lambda _: self._save())
         self._m_window.actionSave_as.triggered.connect(lambda _: self.save_as())
         self._m_window.actionNew.triggered.connect(lambda _: self.new_file())
+        self._m_window.actionOpen.triggered.connect(lambda _: self.open_file())
 
     def updated(self):
         if self.saved:
@@ -47,7 +49,7 @@ class FilesManager:
         self.saved = True
         self.update_title()
 
-    def new_file(self):
+    def ready_destructive(self):
         if not self.saved:
             dlg = ChangesDialog()
             dlg.exec_()
@@ -55,14 +57,60 @@ class FilesManager:
 
             if clicked == dlg.save_btn:
                 if not self._save():
-                    return
+                    return False
                 
             elif clicked == dlg.cancel_btn:
+                return False
+        return True
+
+    def open_file(self):
+        if not self.ready_destructive():
+            return
+
+        file_url, _ = QFileDialog.getOpenFileUrl(
+            self._m_window,
+            "Select File",
+            QUrl.fromLocalFile('.'),
+            "Images (*.png *.jpg *.jpeg);;All Files (*)"
+        )
+        
+        if file_url.isValid():
+            self.file_path = file_url.toLocalFile()
+            loaded_im = cv2.imread(self.file_path, cv2.IMREAD_UNCHANGED)
+            if loaded_im is None:
                 return
+
+            if loaded_im.ndim == 2:
+                loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_GRAY2BGRA)
+
+            elif loaded_im.shape[2] == 3:
+                loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_BGR2BGRA)
+
+            arr = self._canvas_mgr.to_arr()
+            size = (arr.shape[1], arr.shape[0])
+            scaled_im = cv2.resize(loaded_im, size, interpolation=cv2.INTER_AREA)
+            arr[:, :, :] = scaled_im[:, :, :]
+
+        self.saved = True
+        self.update_title()
+        self._canvas_mgr.refresh()
+
+    def handle_close(self, event):
+        if not self.ready_destructive():
+            event.ignore()
+            return
+        event.accept()
+
+    def new_file(self):
+        if not self.ready_destructive():
+            return
 
         arr = self._canvas_mgr.to_arr()
         arr[:, :, :] = [255, 255, 255, 255]
         self._canvas_mgr.refresh()
+        self.clear_file()
+
+    def clear_file(self):
         self.saved = True
         self.file_path = None
         self.update_title()
@@ -91,5 +139,5 @@ class FilesManager:
             self.save_img()
             return True
 
-        self.save_as()
+        return self.save_as()
 

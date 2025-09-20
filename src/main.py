@@ -27,14 +27,17 @@ class PaintWindow(QMainWindow):
         tools_mgr = ToolsManager(self)
         tools_mgr.init()
 
-        files_mgr = FilesManager(self, canvas_mgr)
-        files_mgr.init()
+        self.files_mgr = FilesManager(self, canvas_mgr)
+        self.files_mgr.init()
 
         self.graphics_view.set_canvas(canvas_mgr)
         self.graphics_view.set_color_mgr(color_mgr)
         self.graphics_view.set_tools_mgr(tools_mgr)
         self.graphics_view.set_main_window(self)
-        self.graphics_view.set_files_mgr(files_mgr)
+        self.graphics_view.set_files_mgr(self.files_mgr)
+
+    def closeEvent(self, a0) -> None:
+        self.files_mgr.handle_close(a0)
 
 
 if __name__ == "__main__":

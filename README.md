@@ -29,19 +29,20 @@ This project is still very much in the early development. As per version 0.1.0, 
  - Bucket fill tool (flood fill)
  - Pencil tool
  - Eraser tool
+ - Clear screen tool
  
  ### Features:
  
  - Color selection from a predetermined color palette.
+ - File operations such as opening, creating, and saving images.
 
 ### Work in progress
 
- - Basic file operations (0.1.1).
- - Clear screen button (0.1.1).
  - Thickness selection (0.1.2).
  - Window resizing (0.1.3).
  - Line, rectangle and circle tools (<0.2.0).
  - Custom color selection menu (<0.2.0).
+ - Undo and redo commands (<0.3.0).
 
 And more...
 

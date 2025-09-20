@@ -1,0 +1,9 @@
+{
+  "include": ["src"],
+  "python.analysis": {
+    "autoImportCompletions": true,
+    "diagnosticMode": "workspace",
+    "extraPaths": ["src"]
+  }
+}
+

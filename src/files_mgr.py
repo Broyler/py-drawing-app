@@ -67,10 +67,11 @@ class FilesManager:
         if not self.ready_destructive():
             return
 
+        pref_path = self.file_path or '.'
         file_url, _ = QFileDialog.getOpenFileUrl(
             self._m_window,
             "Select File",
-            QUrl.fromLocalFile('.'),
+            QUrl.fromLocalFile(pref_path),
             "Images (*.png *.jpg *.jpeg);;All Files (*)"
         )
         
@@ -116,9 +117,10 @@ class FilesManager:
         self.update_title()
 
     def save_as(self):
+        pref_path = self.file_path or '.'
         file_url, flt = QFileDialog.getSaveFileUrl(
             self._m_window, "Save drawing",
-            QUrl.fromLocalFile('.'),
+            QUrl.fromLocalFile(pref_path),
             "PNG Image (*.png);;JPEG Image (*.jpg);;All Files (*)"
         )
         if file_url.isValid():

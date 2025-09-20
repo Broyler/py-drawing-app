@@ -42,6 +42,7 @@ This project is still very much in the early development. As per version 0.1.0, 
  - Window resizing (0.1.3).
  - Line, rectangle and circle tools (<0.2.0).
  - Custom color selection menu (<0.2.0).
+ - Recent files menu (<0.2.0).
  - Undo and redo commands (<0.3.0).
 
 And more...

@@ -5673,7 +5673,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>360</y>
+      <y>390</y>
       <width>61</width>
       <height>21</height>
      </rect>
@@ -5690,6 +5690,41 @@
     <property name="checkable">
      <bool>false</bool>
     </property>
+   </widget>
+   <widget class="QComboBox" name="thicknessBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>350</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>1px</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>2px</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>4px</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>8px</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>16px</string>
+     </property>
+    </item>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

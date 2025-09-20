@@ -11,6 +11,7 @@ class CanvasView(QGraphicsView):
         super().__init__(parent)
         self._canvas = None
         self._dragging = False
+        self._thickness = 1
 
     def set_canvas(self, canvas):
         self._canvas = canvas
@@ -27,19 +28,38 @@ class CanvasView(QGraphicsView):
     def set_main_window(self, m_window):
         self._m_window = m_window
         self._m_window.btn_clear.clicked.connect(self.clear_screen)
+        self._m_window.thicknessBox.currentTextChanged.connect(self.thickness_changed)
+
+    def thickness_changed(self, t: str):
+        pixels = t.rstrip('px')
+        if not pixels.isdigit():
+            return
+        self._thickness = int(pixels)
+
+    def change_with_thickness(self, x: int, y: int, color):
+        if self._canvas is None:
+            return
+        arr = self._canvas.to_arr()
+        l = self._thickness // 2
+        r = self._thickness - l
+        yl = max(0, y - l)
+        yr = min(arr.shape[0], y + r)
+        xl = max(0, x - l)
+        xr = min(arr.shape[1], x + r)
+
+        arr[yl:yr, xl:xr, :] = color
 
     def pencil_tool(self, x, y):
         if self._canvas is None:
             return
-        arr = self._canvas.to_arr()
-        arr[y, x] = self._color_mgr.selected_bgra
+
+        self.change_with_thickness(x, y, self._color_mgr.selected_bgra)
         self._canvas.refresh()
 
     def eraser_tool(self, x, y):
         if self._canvas is None:
             return
-        arr = self._canvas.to_arr()
-        arr[y, x] = [255, 255, 255, 255]
+        self.change_with_thickness(x, y, [255, 255, 255, 255])
         self._canvas.refresh()
 
     def fill_tool(self, lx, ly):

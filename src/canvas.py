@@ -45,7 +45,47 @@ class Canvas(QImage):
         self.arr = raw[:, : self._width, :]
         return self.arr
 
+    def _on_view_resize(self, event):
+        view_w = self._graphics_view.width() - canvas_pad
+        view_h = self._graphics_view.height() - canvas_pad
+
+        base_size = min(view_w, view_h)
+        snapped_size = base_size - (base_size % self._scale_factor)
+        new_canvas_size = snapped_size // self._scale_factor
+
+        if new_canvas_size != self._width:
+            self.resize_canvas(new_canvas_size)
+
+    def resize_canvas(self, new_size):
+        old_arr = self.arr.copy() if self.arr is not None else None
+        self._width = new_size
+        self._height = new_size
+        self.arr = np.zeros((new_size, new_size, self._channels), dtype=np.uint8)
+        if old_arr is not None:
+            h = min(old_arr.shape[0], new_size)
+            w = min(old_arr.shape[1], new_size)
+            self.arr[:h, :w, :] = old_arr[:h, :w, :]
+
+        self._update_image()
+        self.refresh()
+
+
+    def _update_image(self):
+        super().__init__(self._width, self._height, self.format())
+        ptr = self.bits()
+        if ptr is None:
+            return
+        ptr.setsize(self.byteCount())
+        buf = memoryview(ptr)
+        self.arr = np.ndarray(
+            shape=(self._height, self._width, self._channels),
+            dtype=np.uint8,
+            buffer=buf
+        )
+
     def init(self):
+        self._graphics_view.resizeEvent = self._on_view_resize
+
         self.to_arr()
         if self.arr is None:
             return

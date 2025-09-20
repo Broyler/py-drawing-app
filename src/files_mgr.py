@@ -1,9 +1,10 @@
 import os
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import cv2
 
 import settings
+from confirm_dialog import ChangesDialog
 
 
 class FilesManager:
@@ -16,6 +17,8 @@ class FilesManager:
     def init(self):
         self.update_title()
         self._m_window.actionSave.triggered.connect(lambda _: self._save())
+        self._m_window.actionSave_as.triggered.connect(lambda _: self.save_as())
+        self._m_window.actionNew.triggered.connect(lambda _: self.new_file())
 
     def updated(self):
         if self.saved:
@@ -44,16 +47,49 @@ class FilesManager:
         self.saved = True
         self.update_title()
 
-    def _save(self):
-        if self.file_path:
-            return self.save_img()
+    def new_file(self):
+        if not self.saved:
+            dlg = ChangesDialog()
+            dlg.exec_()
+            clicked = dlg.clickedButton()
 
-        file_url, _ = QFileDialog.getSaveFileUrl(
-            None, "Save drawing",
+            if clicked == dlg.save_btn:
+                if not self._save():
+                    return
+                
+            elif clicked == dlg.cancel_btn:
+                return
+
+        arr = self._canvas_mgr.to_arr()
+        arr[:, :, :] = [255, 255, 255, 255]
+        self._canvas_mgr.refresh()
+        self.saved = True
+        self.file_path = None
+        self.update_title()
+
+    def save_as(self):
+        file_url, flt = QFileDialog.getSaveFileUrl(
+            self._m_window, "Save drawing",
             QUrl.fromLocalFile('.'),
-            None
+            "PNG Image (*.png);;JPEG Image (*.jpg);;All Files (*)"
         )
         if file_url.isValid():
             self.file_path = file_url.toLocalFile()
+            fpl = self.file_path.lower()
+            if flt.startswith("PNG") and not fpl.endswith(".png"):
+                self.file_path += '.png'
+
+            if flt.startswith("JPEG") and not (fpl.endswith(".jpg") or fpl.endswith(".jpeg")):
+                self.file_path += '.jpg'
+
             self.save_img()
+            return True
+        return False
+
+    def _save(self):
+        if self.file_path:
+            self.save_img()
+            return True
+
+        self.save_as()
 

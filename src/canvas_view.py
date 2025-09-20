@@ -3,6 +3,8 @@ from settings import Tool
 import numpy as np
 from collections import deque
 
+from confirm_dialog import ConfirmDialog
+
 
 class CanvasView(QGraphicsView):
     def __init__(self, parent=None):
@@ -18,6 +20,13 @@ class CanvasView(QGraphicsView):
 
     def set_tools_mgr(self, tools_mgr):
         self._tools_mgr = tools_mgr
+
+    def set_files_mgr(self, files_mgr):
+        self._files_mgr = files_mgr
+
+    def set_main_window(self, m_window):
+        self._m_window = m_window
+        self._m_window.btn_clear.clicked.connect(self.clear_screen)
 
     def pencil_tool(self, x, y):
         if self._canvas is None:
@@ -57,7 +66,17 @@ class CanvasView(QGraphicsView):
 
         self._canvas.refresh()
 
+    def clear_screen(self):
+        if not self._canvas:
+            return
 
+        dlg = ConfirmDialog("Are you sure you want to clear the canvas?", self)
+        if not dlg.exec():
+            return
+
+        arr = self._canvas.to_arr()
+        arr[:, :, :] = [255, 255, 255, 255]
+        self._canvas.refresh()
 
     def mousePressEvent(self, event):
         if not self._canvas or event is None:
@@ -95,4 +114,9 @@ class CanvasView(QGraphicsView):
 
             case Tool.FILL.value:
                 self.fill_tool(x, y)
+
+            case _:
+                return
+
+        self._files_mgr.updated()
 

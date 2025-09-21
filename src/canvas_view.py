@@ -88,27 +88,33 @@ class CanvasView(QGraphicsView):
 
         self._canvas.refresh()
 
+    def preview_tool(func):
+        def wrapper(self, *args, **kwargs):
+            if self._canvas is None:
+                return
+
+            if self._line_start is None:
+                self._line_start = (args[0], args[1])
+
+            self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
+            func(self, *args, **kwargs)
+            self._canvas.refresh()
+        return wrapper
+
+    @preview_tool
     def line_tool(self, x, y):
-        if self._canvas is None:
-            return
-
-        if self._line_start is None:
-            self._line_start = (x, y)
-
-        self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
         cv2.line(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
-        self._canvas.refresh()
 
+    @preview_tool
     def rect_tool(self, x, y):
-        if self._canvas is None:
-            return
-
-        if self._line_start is None:
-            self._line_start = (x, y)
-
-        self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
         cv2.rectangle(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
-        self._canvas.refresh()
+
+    @preview_tool
+    def circle_tool(self, x, y):
+        dx = abs(x - self._line_start[0])
+        dy = abs(y - self._line_start[1])
+        rad = round(np.sqrt(dx * dx + dy * dy))
+        cv2.circle(self._canvas._arr_temp, self._line_start, rad, self._color_mgr.selected_bgra, self._thickness)
 
     def clear_screen(self):
         if not self._canvas:
@@ -146,14 +152,19 @@ class CanvasView(QGraphicsView):
         x = int(scene_pos.x() / self._canvas._scale_factor)
         y = int(scene_pos.y() / self._canvas._scale_factor)
 
-        match self._tools_mgr.selected:
-            case Tool.LINE.value:
-                if self._line_start is not None:
+        if self._line_start is not None:
+            match self._tools_mgr.selected:
+                case Tool.LINE.value:
                     cv2.line(self._canvas._arr, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
 
-            case Tool.RECT.value:
-                if self._line_start is not None:
-                    cv2.rectangle(self._canvas._arr , self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+                case Tool.RECT.value:
+                    cv2.rectangle(self._canvas._arr, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+
+                case Tool.CIRCLE.value:
+                    dx = abs(x - self._line_start[0])
+                    dy = abs(y - self._line_start[1])
+                    rad = round(np.sqrt(dx * dx + dy * dy))
+                    cv2.circle(self._canvas._arr, self._line_start, rad, self._color_mgr.selected_bgra, self._thickness)
 
         self._line_start = None
         self._canvas._arr_temp = None
@@ -185,6 +196,9 @@ class CanvasView(QGraphicsView):
 
             case Tool.RECT.value:
                 self.rect_tool(x, y)
+
+            case Tool.CIRCLE.value:
+                self.circle_tool(x, y)
 
             case _:
                 return

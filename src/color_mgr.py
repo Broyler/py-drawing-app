@@ -11,7 +11,7 @@ class ColorManager:
         self.m_window = m_window
         self.selected: Optional[str] = None
         self.buttons = {}
-        self.selected_custom = settings.colors["customcolor"]
+        self.selected_custom = None
         self.color_settings = settings.colors
 
     @property
@@ -37,12 +37,15 @@ class ColorManager:
         return [b, g, r, 255]
 
     def custom_color_select(self):
-        color = QColorDialog.getColor(QColor(self.selected_custom), self.m_window, "Select Color")
+        color = QColorDialog.getColor(QColor(self.selected_custom or "#ffffff"), self.m_window, "Select Color")
 
         if color.isValid():
             self.m_window.btn_customcolor.setStyleSheet(f"background-color: {color.name()};")
             self.color_settings["customcolor"] = color.name()
+            self.selected_custom = color.name()
             self.on_color_select("customcolor")
+            return True
+        return False
 
     def init(self):
         self.m_window.button_other_color.clicked.connect(self.custom_color_select)
@@ -60,6 +63,10 @@ class ColorManager:
                 btn.setChecked(False)
 
     def on_color_select(self, color: str) -> None:
+        if color == "customcolor" and self.selected_custom is None:
+            if not self.custom_color_select():
+                return
+
         new = self.buttons.get(color)
         if new is None:
             return

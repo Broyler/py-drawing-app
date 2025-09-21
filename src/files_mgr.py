@@ -1,7 +1,8 @@
 import os
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWidgets import QFileDialog
-import cv2
+import numpy as np
+from PIL import Image
 
 import settings
 from confirm_dialog import ChangesDialog
@@ -39,12 +40,12 @@ class FilesManager:
         arr = self._canvas_mgr.to_arr()
         new_w = int(settings.scale_factor * arr.shape[1])
         new_h = int(settings.scale_factor * arr.shape[0])
-        im = cv2.resize(
-            arr,
-            (new_w, new_h),
-            interpolation=cv2.INTER_NEAREST
-        )
-        cv2.imwrite(str(self.file_path), im)
+
+        pil_im = Image.fromarray(arr, mode="RGBA")
+        pil_im = pil_im.resize((new_w, new_h), Image.NEAREST)
+        fmt = str(self.file_path).split('.')[-1].upper()
+        pil_im.save(str(self.file_path), format=fmt)
+
         self.saved = True
         self.update_title()
 
@@ -76,20 +77,23 @@ class FilesManager:
         
         if file_url.isValid():
             self.file_path = file_url.toLocalFile()
-            loaded_im = cv2.imread(self.file_path, cv2.IMREAD_UNCHANGED)
-            if loaded_im is None:
+            # loaded_im = cv2.imread(self.file_path, cv2.IMREAD_UNCHANGED)
+            pil_im = Image.open(self.file_path).convert('RGBA')
+            arr = self._canvas_mgr.to_arr()
+
+            if pil_im is None:
                 return
 
-            if loaded_im.ndim == 2:
-                loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_GRAY2BGRA)
+            # if loaded_im.ndim == 2:
+            #     loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_GRAY2BGRA)
+            #
+            # elif loaded_im.shape[2] == 3:
+            #     loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_BGR2BGRA)
 
-            elif loaded_im.shape[2] == 3:
-                loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_BGR2BGRA)
+            pil_im = pil_im.resize((arr.shape[1], arr.shape[0]), Image.LANCZOS)
+            loaded_im = np.array(pil_im, dtype=np.uint8)
 
-            arr = self._canvas_mgr.to_arr()
-            size = (arr.shape[1], arr.shape[0])
-            scaled_im = cv2.resize(loaded_im, size, interpolation=cv2.INTER_AREA)
-            arr[:, :, :] = scaled_im[:, :, :]
+            arr[:, :, :] = loaded_im[:, :, :]
 
         self.saved = True
         self.update_title()

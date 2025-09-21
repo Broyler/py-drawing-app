@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import QGraphicsView
-import cv2
 from settings import Tool
 import numpy as np
 from collections import deque
 
 from confirm_dialog import ConfirmDialog
+from draw.circle import draw_circle
+from draw.line import draw_line
+from draw.rect import draw_rectangle
 
 
 class CanvasView(QGraphicsView):
@@ -101,20 +103,24 @@ class CanvasView(QGraphicsView):
             self._canvas.refresh()
         return wrapper
 
+
     @preview_tool
     def line_tool(self, x, y):
-        cv2.line(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+        draw_line(self._canvas._arr_temp, self._line_start, (x, y),
+              self._color_mgr.selected_bgra, self._thickness)
 
     @preview_tool
     def rect_tool(self, x, y):
-        cv2.rectangle(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+        draw_rectangle(self._canvas._arr_temp, self._line_start, (x, y),
+                   self._color_mgr.selected_bgra, self._thickness)
 
     @preview_tool
     def circle_tool(self, x, y):
         dx = abs(x - self._line_start[0])
         dy = abs(y - self._line_start[1])
-        rad = round(np.sqrt(dx * dx + dy * dy))
-        cv2.circle(self._canvas._arr_temp, self._line_start, rad, self._color_mgr.selected_bgra, self._thickness)
+        rad = round(np.sqrt(dx*dx + dy*dy))
+        draw_circle(self._canvas._arr_temp, self._line_start, rad,
+                    self._color_mgr.selected_bgra, self._thickness)
 
     def clear_screen(self):
         if not self._canvas:
@@ -147,7 +153,6 @@ class CanvasView(QGraphicsView):
     def handle_release(self, event):
         if not self._canvas or event is None:
             return
-
         scene_pos = self.mapToScene(event.pos())
         x = int(scene_pos.x() / self._canvas._scale_factor)
         y = int(scene_pos.y() / self._canvas._scale_factor)
@@ -155,16 +160,19 @@ class CanvasView(QGraphicsView):
         if self._line_start is not None:
             match self._tools_mgr.selected:
                 case Tool.LINE.value:
-                    cv2.line(self._canvas._arr, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+                    draw_line(self._canvas._arr, self._line_start, (x, y),
+                      self._color_mgr.selected_bgra, self._thickness)
 
                 case Tool.RECT.value:
-                    cv2.rectangle(self._canvas._arr, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+                    draw_rectangle(self._canvas._arr, self._line_start, (x, y),
+                                   self._color_mgr.selected_bgra, self._thickness)
 
                 case Tool.CIRCLE.value:
                     dx = abs(x - self._line_start[0])
                     dy = abs(y - self._line_start[1])
-                    rad = round(np.sqrt(dx * dx + dy * dy))
-                    cv2.circle(self._canvas._arr, self._line_start, rad, self._color_mgr.selected_bgra, self._thickness)
+                    rad = round(np.sqrt(dx*dx + dy*dy))
+                    draw_circle(self._canvas._arr, self._line_start, rad,
+                                self._color_mgr.selected_bgra, self._thickness)
 
         self._line_start = None
         self._canvas._arr_temp = None

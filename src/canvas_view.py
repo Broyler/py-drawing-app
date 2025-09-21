@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QGraphicsView
+import cv2
 from settings import Tool
 import numpy as np
 from collections import deque
@@ -12,6 +13,7 @@ class CanvasView(QGraphicsView):
         self._canvas = None
         self._dragging = False
         self._thickness = 1
+        self._line_start = None
 
     def set_canvas(self, canvas):
         self._canvas = canvas
@@ -86,6 +88,17 @@ class CanvasView(QGraphicsView):
 
         self._canvas.refresh()
 
+    def line_tool(self, x, y):
+        if self._canvas is None:
+            return
+
+        if self._line_start is None:
+            self._line_start = (x, y)
+
+        self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
+        cv2.line(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+        self._canvas.refresh()
+
     def clear_screen(self):
         if not self._canvas:
             return
@@ -112,6 +125,22 @@ class CanvasView(QGraphicsView):
 
     def mouseReleaseEvent(self, event):
         self._dragging = False
+        self.handle_release(event)
+
+    def handle_release(self, event):
+        if not self._canvas or event is None:
+            return
+
+        scene_pos = self.mapToScene(event.pos())
+        x = int(scene_pos.x() / self._canvas._scale_factor)
+        y = int(scene_pos.y() / self._canvas._scale_factor)
+
+        match self._tools_mgr.selected:
+            case Tool.LINE.value:
+                if self._line_start is not None:
+                    cv2.line(self._canvas._arr, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+                    self._canvas._arr_temp = None
+                    self._line_start = None
 
     def handle_paint(self, event):
         if not self._canvas or event is None:
@@ -134,6 +163,9 @@ class CanvasView(QGraphicsView):
 
             case Tool.FILL.value:
                 self.fill_tool(x, y)
+
+            case Tool.LINE.value:
+                self.line_tool(x, y)
 
             case _:
                 return

@@ -25,6 +25,7 @@ class Canvas(QImage):
         self._height = height
 
         self._arr = self._create_array()
+        self._arr_temp = None
         self._pixmap_item.setPixmap(QPixmap.fromImage(self))
         self._pixmap_item.setScale(self._scale_factor)
 
@@ -80,5 +81,21 @@ class Canvas(QImage):
         self.refresh()
 
     def refresh(self):
-        self._pixmap_item.setPixmap(QPixmap.fromImage(self))
+        if self._arr is None:
+            return
+
+        if self._arr_temp is None:
+            self._pixmap_item.setPixmap(QPixmap.fromImage(self))
+            return
+
+        arr_disp = self._arr.copy()
+        mask = self._arr_temp[:, :, 3] > 0
+        arr_disp[mask] = self._arr_temp[mask]
+        self._pixmap_item.setPixmap(QPixmap.fromImage(QImage(
+            arr_disp.data,
+            arr_disp.shape[1],
+            arr_disp.shape[0],
+            arr_disp.strides[0],
+            QImage.Format_ARGB32
+        )))
 

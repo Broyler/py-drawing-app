@@ -1,8 +1,7 @@
 import os
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog
 import cv2
-from numpy import load
 
 import settings
 from confirm_dialog import ChangesDialog

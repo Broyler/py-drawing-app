@@ -1,5 +1,8 @@
 from typing import Optional, List
 from functools import partial
+
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QColorDialog
 import settings
 
 
@@ -8,6 +11,8 @@ class ColorManager:
         self.m_window = m_window
         self.selected: Optional[str] = None
         self.buttons = {}
+        self.selected_custom = settings.colors["customcolor"]
+        self.color_settings = settings.colors
 
     @property
     def selected_btn(self):
@@ -16,7 +21,7 @@ class ColorManager:
     @property
     def selected_color(self) -> Optional[str]:
         if self.selected is not None:
-            return settings.colors.get(self.selected)
+            return self.color_settings.get(self.selected)
         return None
 
     @property
@@ -31,8 +36,18 @@ class ColorManager:
         r, g, b = self.selected_ints
         return [b, g, r, 255]
 
+    def custom_color_select(self):
+        color = QColorDialog.getColor(QColor(self.selected_custom), self.m_window, "Select Color")
+
+        if color.isValid():
+            self.m_window.btn_customcolor.setStyleSheet(f"background-color: {color.name()};")
+            self.color_settings["customcolor"] = color.name()
+            self.on_color_select("customcolor")
+
     def init(self):
-        for color in settings.colors.keys():
+        self.m_window.button_other_color.clicked.connect(self.custom_color_select)
+
+        for color in self.color_settings.keys():
             btn = getattr(self.m_window, "btn_" + color)
             self.buttons[color] = btn
             btn.clicked.connect(partial(self.on_color_select, color))

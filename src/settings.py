@@ -23,6 +23,7 @@ colors = {
     "pink": "#ff69b4",
     "gray": "#808080",
     "brown": "#964b00",
+    "customcolor": "#ffffff",
 }
 
 tools = [

@@ -1,8 +1,8 @@
 import sys, os
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import uic
-
 from color_mgr import ColorManager
 from canvas import Canvas
 from tools_mgr import ToolsManager
@@ -17,7 +17,6 @@ class PaintWindow(QMainWindow):
             base_path = sys._MEIPASS
         else:
             base_path = os.path.dirname(os.path.abspath(__file__)).rstrip('src/')
-
 
         ui_path = os.path.join(base_path, "main.ui")
         uic.loadUi(ui_path, self)

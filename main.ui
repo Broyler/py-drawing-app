@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>758</width>
-    <height>618</height>
+    <width>912</width>
+    <height>572</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -5632,7 +5632,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/color_select.png</normaloff>icons/color_select.png</iconset>
+              <normaloff>../../../.designer/backup/icons/color_select.png</normaloff>../../../.designer/backup/icons/color_select.png</iconset>
             </property>
            </widget>
           </item>
@@ -6136,7 +6136,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/pencil.png</normaloff>icons/pencil.png</iconset>
+              <normaloff>../../../.designer/backup/icons/pencil.png</normaloff>../../../.designer/backup/icons/pencil.png</iconset>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -6159,7 +6159,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/eraser.png</normaloff>icons/eraser.png</iconset>
+              <normaloff>../../../.designer/backup/icons/eraser.png</normaloff>../../../.designer/backup/icons/eraser.png</iconset>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -6179,7 +6179,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/rectangle.png</normaloff>icons/rectangle.png</iconset>
+              <normaloff>../../../.designer/backup/icons/rectangle.png</normaloff>../../../.designer/backup/icons/rectangle.png</iconset>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -6199,7 +6199,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/paint-bucket.png</normaloff>icons/paint-bucket.png</iconset>
+              <normaloff>../../../.designer/backup/icons/paint-bucket.png</normaloff>../../../.designer/backup/icons/paint-bucket.png</iconset>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -6219,7 +6219,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/line.png</normaloff>icons/line.png</iconset>
+              <normaloff>../../../.designer/backup/icons/line.png</normaloff>../../../.designer/backup/icons/line.png</iconset>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -6239,7 +6239,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/circle.png</normaloff>icons/circle.png</iconset>
+              <normaloff>../../../.designer/backup/icons/circle.png</normaloff>../../../.designer/backup/icons/circle.png</iconset>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -6336,7 +6336,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>758</width>
+     <width>912</width>
      <height>24</height>
     </rect>
    </property>

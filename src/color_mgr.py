@@ -52,6 +52,7 @@ class ColorManager:
 
         for color in self.color_settings.keys():
             btn = getattr(self.m_window, "btn_" + color)
+            btn.setStyleSheet(f"background-color: {self.color_settings[color]};")
             self.buttons[color] = btn
             btn.clicked.connect(partial(self.on_color_select, color))
 

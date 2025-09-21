@@ -41,7 +41,8 @@ class FilesManager:
         new_w = int(settings.scale_factor * arr.shape[1])
         new_h = int(settings.scale_factor * arr.shape[0])
 
-        pil_im = Image.fromarray(arr, mode="RGBA")
+        rgba_arr = arr[..., [2, 1, 0, 3]]
+        pil_im = Image.fromarray(rgba_arr)
         pil_im = pil_im.resize((new_w, new_h), Image.NEAREST)
         fmt = str(self.file_path).split('.')[-1].upper()
         pil_im.save(str(self.file_path), format=fmt)
@@ -77,22 +78,16 @@ class FilesManager:
         
         if file_url.isValid():
             self.file_path = file_url.toLocalFile()
-            # loaded_im = cv2.imread(self.file_path, cv2.IMREAD_UNCHANGED)
             pil_im = Image.open(self.file_path).convert('RGBA')
             arr = self._canvas_mgr.to_arr()
 
             if pil_im is None:
                 return
 
-            # if loaded_im.ndim == 2:
-            #     loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_GRAY2BGRA)
-            #
-            # elif loaded_im.shape[2] == 3:
-            #     loaded_im = cv2.cvtColor(loaded_im, cv2.COLOR_BGR2BGRA)
-
             pil_im = pil_im.resize((arr.shape[1], arr.shape[0]), Image.LANCZOS)
             loaded_im = np.array(pil_im, dtype=np.uint8)
 
+            loaded_im[..., [0, 2]] = loaded_im[..., [2, 0]]
             arr[:, :, :] = loaded_im[:, :, :]
 
         self.saved = True

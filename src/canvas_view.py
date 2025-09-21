@@ -99,6 +99,17 @@ class CanvasView(QGraphicsView):
         cv2.line(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
         self._canvas.refresh()
 
+    def rect_tool(self, x, y):
+        if self._canvas is None:
+            return
+
+        if self._line_start is None:
+            self._line_start = (x, y)
+
+        self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
+        cv2.rectangle(self._canvas._arr_temp, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+        self._canvas.refresh()
+
     def clear_screen(self):
         if not self._canvas:
             return
@@ -139,8 +150,13 @@ class CanvasView(QGraphicsView):
             case Tool.LINE.value:
                 if self._line_start is not None:
                     cv2.line(self._canvas._arr, self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
-                    self._canvas._arr_temp = None
-                    self._line_start = None
+
+            case Tool.RECT.value:
+                if self._line_start is not None:
+                    cv2.rectangle(self._canvas._arr , self._line_start, (x, y), self._color_mgr.selected_bgra, self._thickness)
+
+        self._line_start = None
+        self._canvas._arr_temp = None
 
     def handle_paint(self, event):
         if not self._canvas or event is None:
@@ -166,6 +182,9 @@ class CanvasView(QGraphicsView):
 
             case Tool.LINE.value:
                 self.line_tool(x, y)
+
+            case Tool.RECT.value:
+                self.rect_tool(x, y)
 
             case _:
                 return

@@ -27,6 +27,8 @@ class CanvasView(QGraphicsView):
         self._m_window.thicknessBox.currentTextChanged.connect(self.thickness_changed)
         self._m_window.actionUndo.triggered.connect(lambda _: self.undo())
         self._m_window.actionRedo.triggered.connect(lambda _: self.redo())
+        self._m_window.btn_undo.clicked.connect(lambda _: self.undo())
+        self._m_window.btn_redo.clicked.connect(lambda _: self.redo())
 
     def undo(self):
         if len(self._undo_stack) == 0 or self._undo_ptr == 0:

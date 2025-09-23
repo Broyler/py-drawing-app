@@ -5625,7 +5625,7 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>Select different color</string>
+             <string>Custom color</string>
             </property>
             <property name="text">
              <string/>
@@ -6131,6 +6131,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Pencil tool</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -6154,6 +6157,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Eraser tool</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -6173,6 +6179,9 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Rectangle tool</string>
             </property>
             <property name="text">
              <string/>
@@ -6194,6 +6203,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Fill tool</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -6214,6 +6226,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="toolTip">
+             <string>Line tool</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -6233,6 +6248,9 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Circle tool</string>
             </property>
             <property name="text">
              <string/>
@@ -6265,12 +6283,50 @@
          </spacer>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="btn_undo">
+            <property name="toolTip">
+             <string>Undo</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>icons/undo.png</normaloff>icons/undo.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btn_redo">
+            <property name="toolTip">
+             <string>Redo</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>icons/redo.png</normaloff>icons/redo.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <widget class="QComboBox" name="thicknessBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Change thickness</string>
           </property>
           <item>
            <property name="text">
@@ -6306,6 +6362,9 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Clear screen</string>
           </property>
           <property name="text">
            <string>Clear</string>

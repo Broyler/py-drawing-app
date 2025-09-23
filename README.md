@@ -2,7 +2,7 @@
 
 Version: 0.2.2
 
-![Screenshot of the application](https://i.ibb.co/mkQdP3T/image.png)
+![Screenshot of the application](https://i.ibb.co/kVK4YhyQ/image.png)
 
 ## Installation
 

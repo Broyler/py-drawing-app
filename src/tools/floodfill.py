@@ -6,5 +6,5 @@ class FloodFill(ToolOperation):
     requires_drag = False
 
     def draw(self, x, y, arr):
-        fill_tool(arr, self.tmp, x, y, self._ctx.color)
+        fill_tool(self._canvas._arr, arr, x, y, self._ctx.color)
 

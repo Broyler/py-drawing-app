@@ -40,5 +40,5 @@ canvas_height = 32
 canvas_channels = 4
 scale_factor = 10
 canvas_pad = 10
-undo_buffer = 15
+undo_buffer = 35
 

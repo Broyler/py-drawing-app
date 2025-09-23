@@ -4,6 +4,7 @@ from settings import Tool
 from typing import Optional
 import numpy as np
 
+from tools.eraser import Eraser
 from tools.pencil import Pencil
 from tools.circle import Circle
 from tools.rect import Rect
@@ -15,7 +16,9 @@ tools = {
     Tool.LINE.value: Line,
     Tool.RECT.value: Rect,
     Tool.CIRCLE.value: Circle,
-    Tool.PENCIL.value: Pencil
+    Tool.PENCIL.value: Pencil,
+    Tool.FILL.value: FloodFill,
+    Tool.ERASER.value: Eraser
 }
 
 
@@ -37,9 +40,8 @@ class ToolsManager:
 
         if tool is not None and issubclass(tool, ToolOperation):
             self.operation = tool(
-                    self._ctx,
-                    self._ctx._canvas._arr_temp,
-                    self._ctx._canvas._arr,
+                self._ctx,
+                self._ctx._canvas
             )
 
         else:
@@ -85,6 +87,7 @@ class ToolsManager:
             self.selected_btn.setChecked(False)
 
         self.selected = tool
+        self.select()
         if self.selected_btn:
             self.selected_btn.setChecked(True)
 

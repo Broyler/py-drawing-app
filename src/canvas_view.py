@@ -40,38 +40,29 @@ class CanvasView(QGraphicsView):
             return
         self._thickness = int(pixels)
 
-    def change_with_thickness(self, x: int, y: int, color):
-        if self._canvas is None:
-            return
-        arr = self._canvas.to_arr()
-        l = self._thickness // 2
-        r = self._thickness - l
-        yl = max(0, y - l)
-        yr = min(arr.shape[0], y + r)
-        xl = max(0, x - l)
-        xr = min(arr.shape[1], x + r)
+    def continuous_tool(func):
+        def wrapper(self, *args, **kwargs):
+            if self._canvas is None:
+                return
+            
+            if self._line_start is None:
+                self._line_start = (args[0], args[1])
 
-        arr[yl:yr, xl:xr, :] = color
+            func(self, args[0], args[1])
 
+            self._line_start = (args[0], args[1])
+            self._canvas.refresh()
+        return wrapper
+
+    @continuous_tool
     def pencil_tool(self, x, y):
-        if self._canvas is None:
-            return
-
-        if self._line_start is None:
-            self._line_start = (x, y)
-
-        # self.change_with_thickness(x, y, self._color_mgr.selected_bgra)
         draw_line(self._canvas._arr, self._line_start, (x, y),
               self._color_mgr.selected_bgra, self._thickness)
 
-        self._line_start = (x, y)
-        self._canvas.refresh()
-
+    @continuous_tool
     def eraser_tool(self, x, y):
-        if self._canvas is None:
-            return
-        self.change_with_thickness(x, y, [255, 255, 255, 255])
-        self._canvas.refresh()
+        draw_line(self._canvas._arr, self._line_start, (x, y),
+                  [255, 255, 255, 255], self._thickness)
 
     def fill_tool(self, lx, ly):
         if self._canvas is None:

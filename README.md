@@ -1,6 +1,6 @@
 ﻿# Python drawing application in PyQt5
 
-Version: 0.2.0
+Version: 0.2.2
 
 ![Screenshot of the application](https://i.ibb.co/mkQdP3T/image.png)
 
@@ -36,6 +36,7 @@ This project is still very much in the early development. As per the current ver
  
 #### Features:
  
+ - Undo and redo
  - File operations such as opening, creating, and saving images.
  - Custom color selection menu.
  - Color selection from a predetermined color palette.
@@ -46,7 +47,6 @@ This project is still very much in the early development. As per the current ver
 
  - Scaling settings (<0.2.5).
  - Recent files menu (<0.3.0).
- - Undo and redo commands (<0.3.5).
  - Selection (<0.4.0).
  - More tools
 

@@ -33,6 +33,9 @@ class FilesManager:
             return 'new file'
         return os.path.normpath(self.file_path).split(os.path.sep)[-1]
 
+    def set_context(self, ctx):
+        self._ctx = ctx
+
     def update_title(self):
         self._m_window.setWindowTitle(f"{self.file_name}{'' if self.saved else '*'} - Python drawing")
 
@@ -89,6 +92,7 @@ class FilesManager:
 
             loaded_im[..., [0, 2]] = loaded_im[..., [2, 0]]
             arr[:, :, :] = loaded_im[:, :, :]
+            self._ctx.reset_undo_stack()
 
         self.saved = True
         self.update_title()
@@ -106,6 +110,7 @@ class FilesManager:
 
         arr = self._canvas_mgr.to_arr()
         arr[:, :, :] = [255, 255, 255, 255]
+        self._ctx.reset_undo_stack()
         self._canvas_mgr.refresh()
         self.clear_file()
 

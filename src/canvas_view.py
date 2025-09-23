@@ -85,11 +85,13 @@ class CanvasView(QGraphicsView):
 
         arr = self._canvas.to_arr()
         arr[:, :, :] = [255, 255, 255, 255]
+        self.reset_undo_stack()
+        self._canvas.refresh()
+
+    def reset_undo_stack(self):
         self._tools_mgr.select()
         self._undo_ptr = 0
         self._undo_stack = []
-        self._canvas.refresh()
-
 
     def mousePressEvent(self, event):
         if not self._canvas or event is None:

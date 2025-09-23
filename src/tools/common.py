@@ -32,14 +32,21 @@ class ToolOperation(ABC):
         
         x_coords = self._diff[:, 0].astype(int)
         y_coords = self._diff[:, 1].astype(int)
-        
+        height, width = self._canvas._arr.shape[:2]
+
+        valid_mask = (x_coords < width) & (y_coords < height) & (x_coords >= 0) & (y_coords >= 0)
+
+        valid_x = x_coords[valid_mask]
+        valid_y = y_coords[valid_mask]
+
         if undo:
-            colors_to_apply = self._diff[:, 2:6]
+            valid_colors = self._diff[valid_mask, 2:6]
         else:
-            colors_to_apply = self._diff[:, 6:10]
-        
-        self._canvas._arr[y_coords, x_coords] = colors_to_apply
-        self._canvas.refresh()
+            valid_colors = self._diff[valid_mask, 6:10]
+
+        if len(valid_x) > 0:
+            self._canvas._arr[valid_y, valid_x] = valid_colors
+            self._canvas.refresh()       
 
     def exec(self, x, y):
         self.tmp = np.zeros_like(self._canvas._arr)

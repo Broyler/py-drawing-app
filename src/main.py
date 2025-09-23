@@ -31,7 +31,6 @@ class PaintWindow(QMainWindow):
         tools_mgr = ToolsManager(self)
 
         self.files_mgr = FilesManager(self, canvas_mgr)
-        self.files_mgr.init()
 
         self.graphics_view.set_props(
                 canvas_mgr,
@@ -42,6 +41,8 @@ class PaintWindow(QMainWindow):
         )
         tools_mgr.set_context(self.graphics_view)
         tools_mgr.init()
+        self.files_mgr.set_context(self.graphics_view)
+        self.files_mgr.init()
 
     def closeEvent(self, a0) -> None:
         self.files_mgr.handle_close(a0)

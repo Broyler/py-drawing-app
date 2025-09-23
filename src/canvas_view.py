@@ -57,7 +57,14 @@ class CanvasView(QGraphicsView):
         if self._canvas is None:
             return
 
-        self.change_with_thickness(x, y, self._color_mgr.selected_bgra)
+        if self._line_start is None:
+            self._line_start = (x, y)
+
+        # self.change_with_thickness(x, y, self._color_mgr.selected_bgra)
+        draw_line(self._canvas._arr, self._line_start, (x, y),
+              self._color_mgr.selected_bgra, self._thickness)
+
+        self._line_start = (x, y)
         self._canvas.refresh()
 
     def eraser_tool(self, x, y):

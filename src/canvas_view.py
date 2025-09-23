@@ -1,12 +1,17 @@
 from PyQt5.QtWidgets import QGraphicsView
-from settings import Tool
+from settings import Tool, undo_buffer
 import numpy as np
-from collections import deque
 
 from confirm_dialog import ConfirmDialog
 from draw.circle import draw_circle
 from draw.line import draw_line
 from draw.rect import draw_rectangle
+from tools.circle import Circle
+from tools.rect import Rect
+from tools.line import Line
+from tools.floodfill import FloodFill
+
+from tools.common import ToolOperation, continuous_tool, preview_tool
 
 
 class CanvasView(QGraphicsView):
@@ -16,23 +21,48 @@ class CanvasView(QGraphicsView):
         self._dragging = False
         self._thickness = 1
         self._line_start = None
+        self._undo_stack = []
+        self._undo_ptr = 0
 
-    def set_canvas(self, canvas):
+    def set_props(self, canvas, color_mgr, tools_mgr, files_mgr, m_window):
         self._canvas = canvas
-
-    def set_color_mgr(self, color_mgr):
         self._color_mgr = color_mgr
-
-    def set_tools_mgr(self, tools_mgr):
         self._tools_mgr = tools_mgr
-
-    def set_files_mgr(self, files_mgr):
         self._files_mgr = files_mgr
-
-    def set_main_window(self, m_window):
         self._m_window = m_window
         self._m_window.btn_clear.clicked.connect(self.clear_screen)
         self._m_window.thicknessBox.currentTextChanged.connect(self.thickness_changed)
+        self._m_window.actionUndo.triggered.connect(lambda _: self.undo())
+        self._m_window.actionRedo.triggered.connect(lambda _: self.redo())
+
+    def undo(self):
+        if len(self._undo_stack) == 0 or self._undo_ptr == 0:
+            return
+
+        self._undo_ptr -= 1
+        action = self._undo_stack[self._undo_ptr]
+        action.undo()
+
+    def redo(self):
+        if len(self._undo_stack) <= self._undo_ptr:
+            return
+
+        action = self._undo_stack[self._undo_ptr]
+        self._undo_ptr += 1
+        action.redo()
+
+    def exec_oper(self, oper, x, y):
+        op = oper(self)
+        op.exec(x, y)
+        if len(self._undo_stack) > self._undo_ptr:
+            self._undo_stack = self._undo_stack[:self._undo_ptr]
+
+        self._undo_stack.append(op)
+        self._undo_ptr += 1
+
+        if len(self._undo_stack) > undo_buffer:
+            self._undo_stack = self._undo_stack[-undo_buffer:]
+            self._undo_ptr = len(self._undo_stack)
 
     def thickness_changed(self, t: str):
         pixels = t.rstrip('px')
@@ -40,19 +70,6 @@ class CanvasView(QGraphicsView):
             return
         self._thickness = int(pixels)
 
-    def continuous_tool(func):
-        def wrapper(self, *args, **kwargs):
-            if self._canvas is None:
-                return
-            
-            if self._line_start is None:
-                self._line_start = (args[0], args[1])
-
-            func(self, args[0], args[1])
-
-            self._line_start = (args[0], args[1])
-            self._canvas.refresh()
-        return wrapper
 
     @continuous_tool
     def pencil_tool(self, x, y):
@@ -64,43 +81,15 @@ class CanvasView(QGraphicsView):
         draw_line(self._canvas._arr, self._line_start, (x, y),
                   [255, 255, 255, 255], self._thickness)
 
-    def fill_tool(self, lx, ly):
-        if self._canvas is None:
-            return
-        # BFS flood fill
-        arr = self._canvas.to_arr()
-        orig_color = tuple(arr[ly,lx])
-        target_color = tuple(self._color_mgr.selected_bgra)
-        visited = np.zeros(arr.shape[:2], dtype=bool)
-        queue = deque([(ly, lx)])
-        while queue:
-            y, x = queue.popleft()
-            if visited[y, x]:
-                continue
 
-            visited[y, x] = True
-            arr[y, x] = target_color
 
-            for dy, dx in ((y-1, x), (y+1, x), (y, x-1), (y, x+1)):
-                if 0 <= dy < arr.shape[0] and 0 <= dx < arr.shape[1]:
-                    if not visited[dy, dx] and tuple(arr[dy, dx]) == orig_color:
-                        queue.append((dy, dx))
+    @property
+    def color(self):
+        return self._color_mgr.selected_bgra
 
-        self._canvas.refresh()
-
-    def preview_tool(func):
-        def wrapper(self, *args, **kwargs):
-            if self._canvas is None:
-                return
-
-            if self._line_start is None:
-                self._line_start = (args[0], args[1])
-
-            self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
-            func(self, *args, **kwargs)
-            self._canvas.refresh()
-        return wrapper
-
+    @property
+    def arr(self):
+        return self._canvas._arr
 
     @preview_tool
     def line_tool(self, x, y):
@@ -132,6 +121,7 @@ class CanvasView(QGraphicsView):
         arr[:, :, :] = [255, 255, 255, 255]
         self._canvas.refresh()
 
+
     def mousePressEvent(self, event):
         if not self._canvas or event is None:
             return
@@ -155,22 +145,17 @@ class CanvasView(QGraphicsView):
         x = int(scene_pos.x() / self._canvas._scale_factor)
         y = int(scene_pos.y() / self._canvas._scale_factor)
 
-        if self._line_start is not None:
-            match self._tools_mgr.selected:
-                case Tool.LINE.value:
-                    draw_line(self._canvas._arr, self._line_start, (x, y),
-                      self._color_mgr.selected_bgra, self._thickness)
+        tools = {
+            Tool.LINE.value: Line,
+            Tool.RECT.value: Rect,
+            Tool.CIRCLE.value: Circle,
+            Tool.FILL.value: FloodFill,
+        }
 
-                case Tool.RECT.value:
-                    draw_rectangle(self._canvas._arr, self._line_start, (x, y),
-                                   self._color_mgr.selected_bgra, self._thickness)
-
-                case Tool.CIRCLE.value:
-                    dx = abs(x - self._line_start[0])
-                    dy = abs(y - self._line_start[1])
-                    rad = round(np.sqrt(dx*dx + dy*dy))
-                    draw_circle(self._canvas._arr, self._line_start, rad,
-                                self._color_mgr.selected_bgra, self._thickness)
+        tool = tools.get(self._tools_mgr.selected)
+        if tool is not None and issubclass(tool, ToolOperation):
+            if not (tool.requires_drag and not self._line_start):
+                self.exec_oper(tool, x, y)
 
         self._line_start = None
         self._canvas._arr_temp = None
@@ -194,8 +179,8 @@ class CanvasView(QGraphicsView):
             case Tool.ERASER.value:
                 self.eraser_tool(x, y)
 
-            case Tool.FILL.value:
-                self.fill_tool(x, y)
+            # case Tool.FILL.value:
+            #     self.fill_tool(x, y)
 
             case Tool.LINE.value:
                 self.line_tool(x, y)

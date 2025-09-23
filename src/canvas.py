@@ -5,7 +5,7 @@ from settings import canvas_channels, scale_factor, canvas_pad
 
 import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QGraphicsView
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsPixmapItem
 
 
 class Canvas(QImage):
@@ -56,7 +56,7 @@ class Canvas(QImage):
     def to_arr(self):
         return self._arr
 
-    def _on_view_resize(self, event):
+    def _on_view_resize(self, _):
         new_w, new_h = self._calculate_canvas_size()
         if new_w == self._width and new_h == self._height:
             return

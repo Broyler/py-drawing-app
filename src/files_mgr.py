@@ -84,7 +84,7 @@ class FilesManager:
             if pil_im is None:
                 return
 
-            pil_im = pil_im.resize((arr.shape[1], arr.shape[0]), Image.LANCZOS)
+            pil_im = pil_im.resize((arr.shape[1], arr.shape[0]), Image.Resampling.BOX)
             loaded_im = np.array(pil_im, dtype=np.uint8)
 
             loaded_im[..., [0, 2]] = loaded_im[..., [2, 0]]

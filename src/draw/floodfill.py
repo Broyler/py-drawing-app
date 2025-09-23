@@ -3,9 +3,7 @@ import numpy as np
 
 
 def fill_tool(chk_arr, arr, lx, ly, color):
-    print(1)
     # BFS flood fill
-    # arr = ctx._canvas.to_arr()
     orig_color = tuple(chk_arr[ly,lx])
     target_color = tuple(color)
     visited = np.zeros(chk_arr.shape[:2], dtype=bool)

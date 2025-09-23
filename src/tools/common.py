@@ -4,16 +4,32 @@ from abc import ABC, abstractmethod
 
 class ToolOperation(ABC):
     requires_drag: bool = True
+    temp_flush: bool = True
+    continuous: bool = False
 
-    def __init__(self, context):
+    def __init__(self, context, temp_arr, disp_arr):
         self._ctx = context
         self._diff = None
+        self._temp_arr = temp_arr
+        self._disp_arr = disp_arr
 
     @abstractmethod
-    def draw(self, x, y):
+    def draw(self, x, y, arr):
         raise NotImplementedError()
 
+    def preview(self, x, y):
+        if not self.requires_drag:
+            return
+        if self._temp_arr is None or self.temp_flush:
+            self._temp_arr = np.zeros_like(self._ctx._canvas._arr)
+        self.draw(x, y, self._temp_arr)
+        if self.continuous:
+            self._ctx._line_start = (x, y)
+        self._ctx._canvas.refresh()
+
     def _apply_diff(self, undo: bool = False):
+        print(self._temp_arr.shape, self._disp_arr.shape)
+
         if self._diff is None or len(self._diff) == 0:
             return
         
@@ -25,12 +41,16 @@ class ToolOperation(ABC):
         else:
             colors_to_apply = self._diff[:, 6:10]
         
-        self._ctx._canvas._arr[y_coords, x_coords] = colors_to_apply
+        self._disp_arr[y_coords, x_coords] = colors_to_apply
         self._ctx._canvas.refresh()
 
     def exec(self, x, y):
         self.tmp = np.zeros_like(self._ctx.arr)
-        self.draw(x, y)
+        if not self.requires_drag:
+            self.draw(x, y, self.tmp)
+        else:
+            self.tmp = self._temp_arr
+
         before = self._ctx.arr
         after = self._ctx.arr.copy()
         mask = self.tmp[:, :, 3] > 0
@@ -50,6 +70,7 @@ class ToolOperation(ABC):
         new_col = after[yc, xc]
         self._diff = np.column_stack([xc, yc, old_col, new_col])
         self._apply_diff()
+        self._temp_arr = np.zeros_like(self._disp_arr)
 
     def undo(self):
         self._apply_diff(undo=True)
@@ -57,44 +78,3 @@ class ToolOperation(ABC):
     def redo(self):
         self._apply_diff()
         
-
-def preview_tool(func):
-    def wrapper(self, *args, **kwargs):
-        ctx = None
-        if hasattr(self, "_ctx"):
-            ctx = self._ctx
-        else:
-            ctx = self
-
-        if ctx._canvas is None:
-            return
-
-        if ctx._line_start is None:
-            ctx._line_start = (args[0], args[1])
-
-        ctx._canvas._arr_temp = np.zeros_like(ctx._canvas._arr)
-        func(self, *args, **kwargs)
-        ctx._canvas.refresh()
-    return wrapper
-
-
-def continuous_tool(func):
-    def wrapper(self, *args, **kwargs):
-        ctx = None
-        if hasattr(self, "_ctx"):
-            ctx = self._ctx
-        else:
-            ctx = self
-
-        if ctx._canvas is None:
-            return
-        
-        if ctx._line_start is None:
-            ctx._line_start = (args[0], args[1])
-
-        func(self, *args, **kwargs)
-
-        ctx._line_start = (args[0], args[1])
-        ctx._canvas.refresh()
-    return wrapper
-

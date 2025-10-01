@@ -36,16 +36,36 @@ class ColorManager:
         r, g, b = self.selected_ints
         return [b, g, r, 255]
 
+    def bgra_to_hex(self, bgra):
+        return '#' + ''.join([str(hex(i))[2:].zfill(2) for i in bgra[:-1][::-1]])
+
+    def select_bgra(self, bgra):
+        hex_color = self.bgra_to_hex(bgra)
+        self.select_hex(hex_color)
+
+    def select_hex(self, hex_color):
+        color = QColor(hex_color)
+        return self.select_col(color)
+
+    def select_col(self, color):
+        if not color.isValid():
+            return False
+        self.m_window.btn_customcolor.setStyleSheet(f"background-color: {color.name()}")
+        self.color_settings["customcolor"] = color.name()
+        self.selected_custom = color.name()
+        self.on_color_select("customcolor")
+        return True
+
     def custom_color_select(self):
         color = QColorDialog.getColor(QColor(self.selected_custom or "#ffffff"), self.m_window, "Select Color")
-
-        if color.isValid():
-            self.m_window.btn_customcolor.setStyleSheet(f"background-color: {color.name()};")
-            self.color_settings["customcolor"] = color.name()
-            self.selected_custom = color.name()
-            self.on_color_select("customcolor")
-            return True
-        return False
+        return self.select_col(color)
+        # if color.isValid():
+        #     self.m_window.btn_customcolor.setStyleSheet(f"background-color: {color.name()};")
+        #     self.color_settings["customcolor"] = color.name()
+        #     self.selected_custom = color.name()
+        #     self.on_color_select("customcolor")
+        #     return True
+        # return False
 
     def init(self):
         self.m_window.button_other_color.clicked.connect(self.custom_color_select)

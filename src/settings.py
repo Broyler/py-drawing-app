@@ -8,6 +8,7 @@ class Tool(Enum):
     LINE = "line"
     RECT = "rect"
     CIRCLE = "circle"
+    PIPETTE = "pipette"
 
 
 colors = {
@@ -33,6 +34,7 @@ tools = [
     "line",
     "rect",
     "circle",
+    "pipette"
 ]
 
 canvas_width = 32

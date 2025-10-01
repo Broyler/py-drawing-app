@@ -6,6 +6,7 @@ class ToolOperation(ABC):
     requires_drag: bool = True
     temp_flush: bool = True
     continuous: bool = False
+    no_effect: bool = False
 
     def __init__(self, context, canvas):
         self._ctx = context
@@ -17,7 +18,7 @@ class ToolOperation(ABC):
         raise NotImplementedError()
 
     def preview(self, x, y):
-        if not self.requires_drag:
+        if not self.requires_drag or self.no_effect:
             return
         if self._canvas._arr_temp is None or self.temp_flush:
             self._canvas._arr_temp = np.zeros_like(self._canvas._arr)
@@ -27,7 +28,7 @@ class ToolOperation(ABC):
         self._canvas.refresh()
 
     def _apply_diff(self, undo: bool = False):
-        if self._diff is None or len(self._diff) == 0:
+        if self.no_effect or self._diff is None or len(self._diff) == 0:
             return
         
         x_coords = self._diff[:, 0].astype(int)

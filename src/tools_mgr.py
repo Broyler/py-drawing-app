@@ -11,6 +11,7 @@ from tools.rect import Rect
 from tools.line import Line
 from tools.floodfill import FloodFill
 from tools.common import ToolOperation
+from tools.pipette import Pipette
 
 tools = {
     Tool.LINE.value: Line,
@@ -18,7 +19,8 @@ tools = {
     Tool.CIRCLE.value: Circle,
     Tool.PENCIL.value: Pencil,
     Tool.FILL.value: FloodFill,
-    Tool.ERASER.value: Eraser
+    Tool.ERASER.value: Eraser,
+    Tool.PIPETTE.value: Pipette,
 }
 
 
@@ -58,7 +60,8 @@ class ToolsManager:
 
         op = self.operation
         op.exec(x, y)
-        self._ctx.update_undo_stack(op)
+        if not op.no_effect:
+            self._ctx.update_undo_stack(op)
 
     def init(self):
         for tool in settings.tools:
